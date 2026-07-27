@@ -34,11 +34,15 @@ export async function PUT(
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
     const db = getAdminDb();
-    const ref = db.collection("workExperience").doc(params.id);
-    if (!(await ref.get()).exists) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    const ref = db.collection("workExperience").doc((await params).id);
+    if (!(await ref.get()).exists)
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
     await ref.delete();
     return NextResponse.json({ data: { deleted: true } });
   } catch (err) {
