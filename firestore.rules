@@ -1,19 +1,43 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // This rule allows anyone with your Firestore database reference to view, edit,
-    // and delete all data in your Firestore database. It is useful for getting
-    // started, but it is configured to expire after 30 days because it
-    // leaves your app open to attackers. At that time, all client
-    // requests to your Firestore database will be denied.
-    //
-    // Make sure to write security rules for your app before that time, or else
-    // all client requests to your Firestore database will be denied until you Update
-    // your rules
+    # ── Public read-only collections ──────────────────────────────────────────
+    # These are read by the Next.js server (Admin SDK bypasses rules anyway),
+    # but also potentially by any client. Read is safe; write is locked.
+
+    match /projects/{docId} {
+      allow read: if true;
+      allow write: if false;  # All writes go through API routes → Admin SDK
+    }
+
+    match /workExperience/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /siteConfig/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    # ── Admin-only collections ────────────────────────────────────────────────
+    # These should never be readable or writable from the client browser.
+    # All access goes through the Admin SDK on the server.
+
+    match /admins/{docId} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    match /media/{docId} {
+      allow read: if false;  # Only the admin panel needs this, served server-side
+      allow write: if false;
+    }
+
+    # ── Catch-all: deny everything else ──────────────────────────────────────
     match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2028, 7, 9);
+      allow read, write: if false;
     }
   }
 }

@@ -1,3 +1,7 @@
+// Static data — grid items and company logos remain here.
+// Dynamic data (projects, workExperience, siteConfig) lives in Firestore
+// and is fetched server-side in app/page.tsx.
+
 export const navItems = [
   { name: "About", link: "#about" },
   { name: "Projects", link: "#projects" },
@@ -46,7 +50,6 @@ export const gridItems = [
     img: "/grid.svg",
     spareImg: "/b4.svg",
   },
-
   {
     id: 5,
     title: "Currently building an E-commerce platform",
@@ -70,52 +73,15 @@ export const gridItems = [
 ];
 
 export const companies = [
-  {
-    id: 1,
-    name: "Freelance Yard",
-    img: "/fly.svg",
-    nameImg: "/fly-title.svg",
-  },
-  {
-    id: 2,
-    name: "React",
-    img: "/re.svg",
-    nameImg: "/re-title.svg",
-  },
-  {
-    id: 3,
-    name: ".Net",
-    img: "/net.svg",
-    nameImg: "/net-title.svg",
-  },
-  {
-    id: 4,
-    name: "Vite",
-    img: "/vite.svg",
-    nameImg: "/vite-title.svg",
-  },
-  {
-    id: 5,
-    name: "docker.",
-    img: "/dock.svg",
-    nameImg: "/dockerName.svg",
-  },
+  { id: 1, name: "Freelance Yard", img: "/fly.svg", nameImg: "/fly-title.svg" },
+  { id: 2, name: "React", img: "/re.svg", nameImg: "/re-title.svg" },
+  { id: 3, name: ".Net", img: "/net.svg", nameImg: "/net-title.svg" },
+  { id: 4, name: "Vite", img: "/vite.svg", nameImg: "/vite-title.svg" },
+  { id: 5, name: "docker.", img: "/dock.svg", nameImg: "/dockerName.svg" },
 ];
 
 export const socialMedia = [
-  {
-    id: 1,
-    img: "/git.svg",
-    link: "https://github.com/Kirollos-Nedaa",
-  },
-  {
-    id: 2,
-    img: "/wha.svg",
-    link: "https://wa.me/201094959678",
-  },
-  {
-    id: 3,
-    img: "/link.svg",
-    link: "https://www.linkedin.com/in/kirollos-nedaa/",
-  },
+  { id: 1, img: "/git.svg", link: "https://github.com/Kirollos-Nedaa" },
+  { id: 2, img: "/wha.svg", link: "https://wa.me/201094959678" },
+  { id: 3, img: "/link.svg", link: "https://www.linkedin.com/in/kirollos-nedaa/" },
 ];
