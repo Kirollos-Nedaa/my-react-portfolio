@@ -1,20 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminDb } from "@/lib/firebase/admin";
+import { adminDb } from "@/lib/firebase/admin";
 import { deleteFromBlob } from "@/lib/blob";
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
-    const db = getAdminDb();
-    const ref = db.collection("media").doc(params.id);
+    const db = adminDb;
+    const ref = db.collection("media").doc((await params).id);
     const doc = await ref.get();
-    if (!doc.exists) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (!doc.exists)
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     const { storagePath } = doc.data()!;
     if (storagePath) {
       try {
         await deleteFromBlob(storagePath);
       } catch (e: unknown) {
-        if ((e as { code?: number })?.code !== 404) console.error("[API] Storage delete error:", e);
+        if ((e as { code?: number })?.code !== 404)
+          console.error("[API] Storage delete error:", e);
       }
     }
 

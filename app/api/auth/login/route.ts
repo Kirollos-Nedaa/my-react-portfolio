@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getIronSession } from "iron-session";
 import { getAuth } from "firebase-admin/auth";
-import { getAdminDb } from "@/lib/firebase/admin";
+import { adminDb } from "@/lib/firebase/admin";
 import { sessionOptions, SessionData } from "@/lib/session";
 
 export async function POST(request: NextRequest) {
@@ -18,13 +18,16 @@ export async function POST(request: NextRequest) {
     try {
       decoded = await getAuth().verifyIdToken(idToken, true); // checkRevoked=true
     } catch {
-      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Invalid or expired token" },
+        { status: 401 },
+      );
     }
 
     const { uid, email } = decoded;
 
     // Only pre-approved UIDs in the "admins" Firestore collection can log in
-    const db = getAdminDb();
+    const db = adminDb;
     const adminDoc = await db.collection("admins").doc(uid).get();
     if (!adminDoc.exists) {
       console.warn(`[AUTH] Rejected login attempt uid=${uid} email=${email}`);
@@ -32,7 +35,11 @@ export async function POST(request: NextRequest) {
     }
 
     const response = NextResponse.json({ ok: true });
-    const session = await getIronSession<SessionData>(request, response, sessionOptions);
+    const session = await getIronSession<SessionData>(
+      request,
+      response,
+      sessionOptions,
+    );
     session.isLoggedIn = true;
     session.userId = uid;
     session.email = email ?? "";
@@ -41,6 +48,9 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (err) {
     console.error("[AUTH] Login error:", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

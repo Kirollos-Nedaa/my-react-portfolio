@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminDb } from "@/lib/firebase/admin";
+import { adminDb } from "@/lib/firebase/admin";
 import { z } from "zod";
 
 const UpdateSchema = z.object({
@@ -12,15 +12,22 @@ const UpdateSchema = z.object({
   order: z.number().int().min(0).optional(),
 });
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
     const parsed = UpdateSchema.safeParse(await req.json());
     if (!parsed.success) {
-      return NextResponse.json({ error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
+      return NextResponse.json(
+        { error: "Validation failed", details: parsed.error.flatten() },
+        { status: 400 },
+      );
     }
-    const db = getAdminDb();
-    const ref = db.collection("projects").doc(params.id);
-    if (!(await ref.get()).exists) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    const db = adminDb;
+    const ref = db.collection("projects").doc((await params).id);
+    if (!(await ref.get()).exists)
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
     await ref.update({ ...parsed.data, updatedAt: Date.now() });
     const updated = await ref.get();
     return NextResponse.json({ data: { id: updated.id, ...updated.data() } });
@@ -30,11 +37,15 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
-    const db = getAdminDb();
-    const ref = db.collection("projects").doc(params.id);
-    if (!(await ref.get()).exists) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    const db = adminDb;
+    const ref = db.collection("projects").doc((await params).id);
+    if (!(await ref.get()).exists)
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
     await ref.delete();
     return NextResponse.json({ data: { deleted: true } });
   } catch (err) {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminDb } from "@/lib/firebase/admin";
+import { adminDb } from "@/lib/firebase/admin";
 import { z } from "zod";
 
 const UpdateSchema = z.object({
@@ -13,6 +13,8 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
+
   try {
     const parsed = UpdateSchema.safeParse(await req.json());
     if (!parsed.success) {
@@ -21,8 +23,8 @@ export async function PUT(
         { status: 400 },
       );
     }
-    const db = getAdminDb();
-    const ref = db.collection("workExperience").doc((await params).id);
+    const db = adminDb;
+    const ref = db.collection("workExperience").doc(id);
     if (!(await ref.get()).exists)
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     await ref.update({ ...parsed.data, updatedAt: Date.now() });
@@ -39,8 +41,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const db = getAdminDb();
-    const ref = db.collection("workExperience").doc((await params).id);
+    const { id } = await params;
+    const db = adminDb;
+    const ref = db.collection("workExperience").doc(id);
     if (!(await ref.get()).exists)
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     await ref.delete();
