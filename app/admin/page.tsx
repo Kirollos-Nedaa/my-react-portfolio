@@ -1,9 +1,9 @@
-import { getAdminDb } from "@/lib/firebase/admin";
+import { adminDb } from "@/lib/firebase/admin";
 import Link from "next/link";
 
 async function getStats() {
   try {
-    const db = getAdminDb();
+    const db = adminDb;
     const [p, e, m] = await Promise.all([
       db.collection("projects").count().get(),
       db.collection("workExperience").count().get(),
