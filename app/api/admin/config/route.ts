@@ -18,7 +18,9 @@ export async function GET() {
   try {
     const doc = await adminDb.collection("siteConfig").doc("main").get();
     if (!doc.exists) return NextResponse.json({ data: null });
-    return NextResponse.json({ data: { id: doc.id, ...doc.data() } as SiteConfig });
+    return NextResponse.json({
+      data: { id: doc.id, ...doc.data() } as SiteConfig,
+    });
   } catch (err) {
     console.error("[API] GET config:", err);
     return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });
@@ -29,10 +31,21 @@ export async function PUT(request: NextRequest) {
   try {
     const parsed = Schema.safeParse(await request.json());
     if (!parsed.success) {
-      return NextResponse.json({ error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
+      return NextResponse.json(
+        { error: "Validation failed", details: parsed.error.flatten() },
+        { status: 400 },
+      );
     }
-    const config: SiteConfig = { id: "main", ...parsed.data, updatedAt: Date.now() };
-    await adminDb.collection("siteConfig").doc("main").set(config, { merge: true });
+    const config: SiteConfig = {
+      id: "main",
+      ...parsed.data,
+      cvUrl: parsed.data.cvUrl ?? "",
+      updatedAt: Date.now(),
+    };
+    await adminDb
+      .collection("siteConfig")
+      .doc("main")
+      .set(config, { merge: true });
     return NextResponse.json({ data: config });
   } catch (err) {
     console.error("[API] PUT config:", err);
