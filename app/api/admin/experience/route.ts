@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminDb } from "@/lib/firebase/admin";
+import { adminDb } from "@/lib/firebase/admin";
 import { WorkExperience } from "@/types";
 import { z } from "zod";
 import { v4 as uuidv4 } from "uuid";
@@ -13,7 +13,7 @@ const Schema = z.object({
 
 export async function GET() {
   try {
-    const db = getAdminDb();
+    const db = adminDb;
     const snap = await db.collection("workExperience").orderBy("order", "asc").get();
     const items: WorkExperience[] = snap.docs.map((d) => ({ id: d.id, ...d.data() } as WorkExperience));
     return NextResponse.json({ data: items });
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     const now = Date.now();
     const id = uuidv4();
     const item: WorkExperience = { id, ...parsed.data, createdAt: now, updatedAt: now };
-    await getAdminDb().collection("workExperience").doc(id).set(item);
+    await adminDb.collection("workExperience").doc(id).set(item);
     return NextResponse.json({ data: item }, { status: 201 });
   } catch (err) {
     console.error("[API] POST experience:", err);
