@@ -26,6 +26,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "File exceeds 50 MB limit" }, { status: 400 });
     }
 
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      console.error("[API] upload: BLOB_READ_WRITE_TOKEN is not configured");
+      return NextResponse.json(
+        { error: "Uploads are not configured: add BLOB_READ_WRITE_TOKEN to the server environment variables" },
+        { status: 500 },
+      );
+    }
+
     const { url, pathname } = await uploadToBlob(file, folder);
 
     const id = uuidv4();
@@ -38,6 +46,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ data: asset }, { status: 201 });
   } catch (err) {
     console.error("[API] upload:", err);
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+    const message = err instanceof Error ? err.message : "Upload failed";
+    return NextResponse.json({ error: `Upload failed: ${message}` }, { status: 500 });
   }
 }

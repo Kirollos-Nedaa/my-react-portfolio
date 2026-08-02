@@ -2,13 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { z } from "zod";
 
+const toUrl = (v: unknown) => {
+  if (typeof v !== "string") return v;
+  const t = v.trim();
+  if (!t) return "";
+  return /^[a-z][a-z0-9+.-]*:\/\//i.test(t) ? t : `https://${t}`;
+};
+
 const UpdateSchema = z.object({
-  title: z.string().min(1).max(200).optional(),
-  des: z.string().min(1).max(1000).optional(),
-  img: z.string().url().optional(),
+  title: z.string().trim().min(1).max(200).optional(),
+  des: z.string().trim().min(1).max(1000).optional(),
+  img: z.string().trim().min(1).max(2000).optional(),
   iconLists: z.array(z.string()).max(10).optional(),
-  link: z.string().url().optional().or(z.literal("")),
-  repo: z.string().url().optional().or(z.literal("")),
+  link: z.preprocess(toUrl, z.string().url().or(z.literal(""))).optional(),
+  repo: z.preprocess(toUrl, z.string().url().or(z.literal(""))).optional(),
   order: z.number().int().min(0).optional(),
 });
 

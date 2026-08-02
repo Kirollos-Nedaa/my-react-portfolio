@@ -4,13 +4,20 @@ import { Project } from "@/types";
 import { z } from "zod";
 import { v4 as uuidv4 } from "uuid";
 
+const toUrl = (v: unknown) => {
+  if (typeof v !== "string") return v;
+  const t = v.trim();
+  if (!t) return "";
+  return /^[a-z][a-z0-9+.-]*:\/\//i.test(t) ? t : `https://${t}`;
+};
+
 const Schema = z.object({
-  title: z.string().min(1).max(200),
-  des: z.string().min(1).max(1000),
-  img: z.string().url(),
+  title: z.string().trim().min(1).max(200),
+  des: z.string().trim().min(1).max(1000),
+  img: z.string().trim().min(1).max(2000),
   iconLists: z.array(z.string()).max(10).default([]),
-  link: z.string().url().optional().or(z.literal("")),
-  repo: z.string().url().optional().or(z.literal("")),
+  link: z.preprocess(toUrl, z.string().url().or(z.literal(""))).optional(),
+  repo: z.preprocess(toUrl, z.string().url().or(z.literal(""))).optional(),
   order: z.number().int().min(0).default(0),
 });
 

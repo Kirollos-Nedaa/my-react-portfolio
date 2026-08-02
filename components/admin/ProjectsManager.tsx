@@ -94,7 +94,18 @@ export function ProjectsManager({ initialProjects }: { initialProjects: Project[
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Save failed");
+      if (!res.ok) {
+        const fieldErrors = (data?.details?.fieldErrors ?? {}) as Record<
+          string,
+          string[] | undefined
+        >;
+        const entry = Object.entries(fieldErrors).find(([, v]) => v?.length);
+        throw new Error(
+          entry
+            ? `${entry[0]}: ${entry[1]![0]}`
+            : data.error || "Save failed",
+        );
+      }
 
       toast.success(editing ? "Project updated." : "Project created.");
 
