@@ -42,10 +42,32 @@ export async function POST(request: NextRequest) {
 
     const { uid, email } = decoded;
 
-    // Only pre-approved UIDs in the "admins" Firestore collection can log in
+    // Only pre-approved UIDs in the "admins" Firestore collection can log in.
+    // Bootstrap: while the collection is empty, the verified user whose email
+    // matches ADMIN_EMAIL becomes the first admin automatically.
     const db = getAdminDb();
-    const adminDoc = await db.collection("admins").doc(uid).get();
-    if (!adminDoc.exists) {
+    const adminsRef = db.collection("admins");
+    const adminDoc = await adminsRef.doc(uid).get();
+    let isAdmin = adminDoc.exists;
+
+    if (!isAdmin) {
+      const allowedEmail = process.env.ADMIN_EMAIL?.toLowerCase();
+      if (allowedEmail && email?.toLowerCase() === allowedEmail) {
+        const existing = await adminsRef.limit(1).get();
+        if (existing.empty) {
+          await adminsRef.doc(uid).set({
+            uid,
+            email,
+            role: "super_admin",
+            createdAt: new Date(),
+          });
+          console.info(`[AUTH] Bootstrapped first admin uid=${uid} email=${email}`);
+          isAdmin = true;
+        }
+      }
+    }
+
+    if (!isAdmin) {
       console.warn(`[AUTH] Rejected login attempt uid=${uid} email=${email}`);
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
