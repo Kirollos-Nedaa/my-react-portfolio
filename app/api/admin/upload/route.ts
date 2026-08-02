@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebase/admin";
+import { getAdminDb } from "@/lib/firebase/admin";
 import { uploadToBlob } from "@/lib/blob";
 import { MediaAsset } from "@/types";
 import { v4 as uuidv4 } from "uuid";
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       mimeType: file.type, sizeBytes: file.size, uploadedAt: Date.now(),
     };
 
-    await adminDb.collection("media").doc(id).set(asset);
+    await getAdminDb().collection("media").doc(id).set(asset);
     return NextResponse.json({ data: asset }, { status: 201 });
   } catch (err) {
     console.error("[API] upload:", err);

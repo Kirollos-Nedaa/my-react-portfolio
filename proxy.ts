@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getIronSession } from "iron-session";
-import { sessionOptions, SessionData } from "@/lib/session";
+import { getSessionOptions, SessionData } from "@/lib/session";
 
 // In-memory rate limiter (fine for Vercel single-region; swap for Upstash Redis for multi-region)
 const rateMap = new Map<string, { count: number; resetAt: number }>();
@@ -26,7 +26,7 @@ if (typeof setInterval !== "undefined") {
   }, 60_000);
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const ip =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
@@ -53,7 +53,7 @@ export async function middleware(request: NextRequest) {
   // Protect /admin/* UI pages (except login)
   if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
     const res = NextResponse.next();
-    const session = await getIronSession<SessionData>(request, res, sessionOptions);
+    const session = await getIronSession<SessionData>(request, res, getSessionOptions());
     if (!session.isLoggedIn || !session.userId) {
       const url = new URL("/admin/login", request.url);
       url.searchParams.set("from", pathname);
@@ -65,7 +65,7 @@ export async function middleware(request: NextRequest) {
   // Protect /api/admin/* routes
   if (pathname.startsWith("/api/admin")) {
     const res = NextResponse.next();
-    const session = await getIronSession<SessionData>(request, res, sessionOptions);
+    const session = await getIronSession<SessionData>(request, res, getSessionOptions());
     if (!session.isLoggedIn || !session.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

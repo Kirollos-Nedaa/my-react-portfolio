@@ -10,7 +10,7 @@ export function HoverBorderGradient({
   children,
   containerClassName,
   className,
-  as: Tag = "button",
+  as = "button",
   duration = 1,
   clockwise = true,
   ...props
@@ -21,8 +21,11 @@ export function HoverBorderGradient({
     className?: string;
     duration?: number;
     clockwise?: boolean;
-  } & React.HTMLAttributes<HTMLElement>
+  } & Omit<React.HTMLAttributes<HTMLElement>, "onMouseEnter" | "onMouseLeave">
 >) {
+  // Cast to a loose element type so React 19's polymorphic JSX typing
+  // doesn't collapse the props intersection to `never`.
+  const Tag = as as any;
   const [hovered, setHovered] = useState<boolean>(false);
   const [direction, setDirection] = useState<Direction>("TOP");
 

@@ -1,4 +1,4 @@
-import { adminDb } from "@/lib/firebase/admin";
+import { getAdminDb } from "@/lib/firebase/admin";
 import { Project, WorkExperience, SiteConfig } from "@/types";
 
 import { FloatingNav } from "@/components/ui/FloatingNavbar";
@@ -22,7 +22,7 @@ const navItems = [
 
 async function getData() {
   try {
-    const db = adminDb;
+    const db = getAdminDb();
     const [projectsSnap, experienceSnap, configDoc] = await Promise.all([
       db.collection("projects").orderBy("order", "asc").get(),
       db.collection("workExperience").orderBy("order", "asc").get(),

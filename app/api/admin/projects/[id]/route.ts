@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebase/admin";
+import { getAdminDb } from "@/lib/firebase/admin";
 import { z } from "zod";
 
 const UpdateSchema = z.object({
@@ -24,7 +24,7 @@ export async function PUT(
         { status: 400 },
       );
     }
-    const db = adminDb;
+    const db = getAdminDb();
     const ref = db.collection("projects").doc((await params).id);
     if (!(await ref.get()).exists)
       return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -42,7 +42,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const db = adminDb;
+    const db = getAdminDb();
     const ref = db.collection("projects").doc((await params).id);
     if (!(await ref.get()).exists)
       return NextResponse.json({ error: "Not found" }, { status: 404 });

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getIronSession } from "iron-session";
-import { getAuth } from "firebase-admin/auth";
-import { adminDb } from "@/lib/firebase/admin";
-import { sessionOptions, SessionData } from "@/lib/session";
+import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
+import { getSessionOptions, SessionData } from "@/lib/session";
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,7 +15,7 @@ export async function POST(request: NextRequest) {
     // Verify token server-side — cannot be faked by client
     let decoded;
     try {
-      decoded = await getAuth().verifyIdToken(idToken, true); // checkRevoked=true
+      decoded = await getAdminAuth().verifyIdToken(idToken, true); // checkRevoked=true
     } catch {
       return NextResponse.json(
         { error: "Invalid or expired token" },
@@ -27,7 +26,7 @@ export async function POST(request: NextRequest) {
     const { uid, email } = decoded;
 
     // Only pre-approved UIDs in the "admins" Firestore collection can log in
-    const db = adminDb;
+    const db = getAdminDb();
     const adminDoc = await db.collection("admins").doc(uid).get();
     if (!adminDoc.exists) {
       console.warn(`[AUTH] Rejected login attempt uid=${uid} email=${email}`);
@@ -38,7 +37,7 @@ export async function POST(request: NextRequest) {
     const session = await getIronSession<SessionData>(
       request,
       response,
-      sessionOptions,
+      getSessionOptions(),
     );
     session.isLoggedIn = true;
     session.userId = uid;

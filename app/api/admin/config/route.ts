@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebase/admin";
+import { getAdminDb } from "@/lib/firebase/admin";
 import { SiteConfig } from "@/types";
 import { z } from "zod";
 
@@ -16,7 +16,7 @@ const Schema = z.object({
 
 export async function GET() {
   try {
-    const doc = await adminDb.collection("siteConfig").doc("main").get();
+    const doc = await getAdminDb().collection("siteConfig").doc("main").get();
     if (!doc.exists) return NextResponse.json({ data: null });
     return NextResponse.json({
       data: { id: doc.id, ...doc.data() } as SiteConfig,
@@ -42,7 +42,7 @@ export async function PUT(request: NextRequest) {
       cvUrl: parsed.data.cvUrl ?? "",
       updatedAt: Date.now(),
     };
-    await adminDb
+    await getAdminDb()
       .collection("siteConfig")
       .doc("main")
       .set(config, { merge: true });

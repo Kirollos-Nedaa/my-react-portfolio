@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebase/admin";
+import { getAdminDb } from "@/lib/firebase/admin";
 import { Project } from "@/types";
 import { z } from "zod";
 import { v4 as uuidv4 } from "uuid";
@@ -16,7 +16,7 @@ const Schema = z.object({
 
 export async function GET() {
   try {
-    const db = adminDb;
+    const db = getAdminDb();
     const snap = await db.collection("projects").orderBy("order", "asc").get();
     const projects: Project[] = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Project));
     return NextResponse.json({ data: projects });
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     const now = Date.now();
     const id = uuidv4();
     const project: Project = { id, ...parsed.data, createdAt: now, updatedAt: now };
-    await adminDb.collection("projects").doc(id).set(project);
+    await getAdminDb().collection("projects").doc(id).set(project);
     return NextResponse.json({ data: project }, { status: 201 });
   } catch (err) {
     console.error("[API] POST projects:", err);

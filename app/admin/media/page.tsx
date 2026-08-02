@@ -1,10 +1,10 @@
-import { adminDb } from "@/lib/firebase/admin";
+import { getAdminDb } from "@/lib/firebase/admin";
 import { MediaAsset } from "@/types";
 import { MediaLibrary } from "@/components/admin/MediaLibrary";
 
 async function getMedia(): Promise<MediaAsset[]> {
   try {
-    const snap = await adminDb.collection("media").orderBy("uploadedAt", "desc").limit(500).get();
+    const snap = await getAdminDb().collection("media").orderBy("uploadedAt", "desc").limit(500).get();
     return snap.docs.map((d) => ({ id: d.id, ...d.data() } as MediaAsset));
   } catch { return []; }
 }

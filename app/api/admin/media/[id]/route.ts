@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebase/admin";
+import { getAdminDb } from "@/lib/firebase/admin";
 import { deleteFromBlob } from "@/lib/blob";
 
 export async function DELETE(
@@ -7,7 +7,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const db = adminDb;
+    const db = getAdminDb();
     const ref = db.collection("media").doc((await params).id);
     const doc = await ref.get();
     if (!doc.exists)
